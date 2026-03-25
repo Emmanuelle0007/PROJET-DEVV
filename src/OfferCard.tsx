@@ -67,9 +67,9 @@ export const OfferCard = ({
                         {desc}
                     </p>
                     <div className="flex items-center justify-between">
-            <span className="text-white/40" style={{ fontSize: '11px' }}>
-              Expire le {expires}
-            </span>
+                        <span className="text-white/40" style={{ fontSize: '11px' }}>
+                            Expire le {expires}
+                        </span>
                         <button
                             onClick={onButtonClick}
                             style={{

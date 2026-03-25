@@ -13,7 +13,7 @@ const hotels = [
         id: 1,
         name: 'Le Grand Palais',
         location: 'Paris, France',
-        price: 999000,
+        price: 99990,
         rating: 6.9,
         reviews: 1284,
         category: 'Suite Royale',
@@ -25,7 +25,7 @@ const hotels = [
         id: 2,
         name: 'Radisson Blu Dakar',
         location: 'Dakar, Sénégal',
-        price: 112000,
+        price: 11200,
         rating: 4.3,
         reviews: 842,
         category: 'Chambre Prestige',
@@ -67,7 +67,7 @@ const hotels = [
         category: 'Hotel Luxueux',
         img: '/src/assets/Tokyo1.jpg',
         hoverImages: ['/src/assets/Tokyo-p.jpg', '/src/assets/Tokyo2.jpg', '/src/assets/Tokyo3.jpg'],
-        tags: ['Jardin', 'Piscine', 'Spa','Lasaire massage','Uv massage'],
+        tags: ['Jardin', 'Piscine', 'Spa', 'Lasaire massage', 'Uv massage'],
     },
     {
         id: 6,
@@ -167,46 +167,47 @@ const testimonials = [
     },
 ];
 
+type Booking = {
+    hotelName: string;
+    checkin: string;
+    checkout: string;
+    guests: string;
+    date: string;
+};
+
 type Hotel = typeof hotels[0];
 
-function HotelCard({ hotel }: { hotel: Hotel }) {
+// ✅ CORRECTION 1 : HotelCard reçoit onBookingAdded pour notifier LandingPage
+function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: () => void }) {
     const [isFav, setIsFav] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [bookingData, setBookingData] = useState({ checkin: '', checkout: '', guests: '2' });
     const [bookingSuccess, setBookingSuccess] = useState(false);
-    const [userBookings, setUserBookings] = useState<
-        Array<{ hotelName: string; checkin: string; checkout: string; guests: string; date: string }>
-    >([]);
 
-    useEffect(() => {
-        const savedBookings = localStorage.getItem('userBookings');
-        if (savedBookings) {
-            setUserBookings(JSON.parse(savedBookings));
-        }
-    }, []);
-
-    const handleBooking = (e: React.FormEvent) => {
+    const handleBooking = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!bookingData.checkin || !bookingData.checkout) return;
 
-        const newBooking = {
+        const newBooking: Booking = {
             hotelName: hotel.name,
             checkin: bookingData.checkin,
             checkout: bookingData.checkout,
             guests: bookingData.guests,
-            date: new Date().toLocaleDateString('fr-FR'),
+            date: new Date().toLocaleDateString('€'),
         };
 
-        const updatedBookings = [...userBookings, newBooking];
-        setUserBookings(updatedBookings);
-        localStorage.setItem('userBookings', JSON.stringify(updatedBookings));
+        const saved = localStorage.getItem('userBookings');
+        const current: Booking[] = saved ? JSON.parse(saved) : [];
+        localStorage.setItem('userBookings', JSON.stringify([...current, newBooking]));
+
+        // ✅ CORRECTION 2 : On notifie LandingPage pour qu'il recharge depuis localStorage
+        onBookingAdded();
 
         setBookingSuccess(true);
         setTimeout(() => {
             setBookingSuccess(false);
             setShowModal(false);
-            setBookingData({ checkin: '', checkout: '', guests: '2' });
-        }, 3000);
+        }, 2000);
     };
 
     return (
@@ -218,193 +219,39 @@ function HotelCard({ hotel }: { hotel: Hotel }) {
                 favorite={isFav}
                 onFavoriteToggle={() => setIsFav(!isFav)}
             >
-                <h3
-                    className="text-stone-900 font-semibold leading-snug mb-1.5"
-                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '18px' }}
-                >
+                <h3 className="text-stone-900 font-semibold mb-1.5" style={{ fontSize: '18px' }}>
                     {hotel.name}
                 </h3>
-
-                <p className="flex items-center gap-1.5 text-stone-400 mb-3" style={{ fontSize: '12px' }}>
-                    <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                    </svg>
-                    {hotel.location}
-                </p>
-
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                            <svg
-                                key={s}
-                                className={`w-3.5 h-3.5 ${
-                                    s <= Math.floor(hotel.rating) ? 'text-amber-400' : 'text-stone-200'
-                                }`}
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                        ))}
-                    </div>
-                    <span className="text-stone-400" style={{ fontSize: '12px' }}>
-            {hotel.rating} ({hotel.reviews.toLocaleString()})
-          </span>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mb-5">
-                    {hotel.tags.map((tag) => (
-                        <span
-                            key={tag}
-                            className="text-stone-500"
-                            style={{
-                                fontSize: '11px',
-                                letterSpacing: '0.08em',
-                                background: '#F5F2ED',
-                                padding: '4px 10px',
-                                borderRadius: '2px',
-                            }}
-                        >
-              {tag}
-            </span>
-                    ))}
-                </div>
-
-                <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid #F0EDE8' }}>
-                    <div>
-            <span
-                className="text-stone-900 font-semibold"
-                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '20px' }}
-            >
-              {hotel.price.toLocaleString('fr-FR')}
-            </span>
-                        <span className="text-stone-400 ml-1" style={{ fontSize: '12px' }}>
-              FCFA / nuit
-            </span>
-                    </div>
-                    <Button onClick={() => setShowModal(false)}>Réserver</Button>
+                <p className="text-stone-400 text-sm mb-4">{hotel.location}</p>
+                <div className="flex items-center justify-between pt-4 border-t border-stone-100">
+                    <span className="font-bold">{hotel.price.toLocaleString()} FCFA</span>
+                    <Button onClick={() => setShowModal(true)}>Réserver</Button>
                 </div>
             </Card>
 
+            {/* ✅ CORRECTION 3 : onSuccess supprimé, n'existe plus dans Modal */}
             <Modal
                 isOpen={showModal}
-                onClose={() => !bookingSuccess && setShowModal(false)}
+                onClose={() => { if (!bookingSuccess) setShowModal(false); }}
                 title={hotel.name}
-                subtitle="Réservation"
-                onSuccess={bookingSuccess}
             >
                 {bookingSuccess ? (
-                    <div className="text-center py-10">
-                        <div
-                            className="mx-auto mb-4 flex items-center justify-center"
-                            style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#F0FDF4' }}
-                        >
-                            <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <p
-                            className="text-stone-900 font-semibold mb-1"
-                            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '18px' }}
-                        >
-                            Réservation confirmée
-                        </p>
-                        <p className="text-stone-400 text-sm">Un email de confirmation vous a été envoyé.</p>
-                    </div>
+                    <p className="text-green-600 text-center py-4">Réservation confirmée !</p>
                 ) : (
-                    <form onSubmit={handleBooking} className="space-y-5">
-                        {[
-                            { label: "Date d'arrivée", key: 'checkin' },
-                            { label: 'Date de départ', key: 'checkout' },
-                        ].map(({ label, key }) => (
-                            <div key={key}>
-                                <label
-                                    className="block text-stone-500 uppercase mb-2"
-                                    style={{ fontSize: '10px', letterSpacing: '0.15em' }}
-                                >
-                                    {label}
-                                </label>
-                                <input
-                                    type="date"
-                                    value={bookingData[key as 'checkin' | 'checkout']}
-                                    onChange={(e) => setBookingData({ ...bookingData, [key]: e.target.value })}
-                                    className="w-full text-stone-700 text-sm outline-none"
-                                    style={{
-                                        border: '1px solid #E7E3DC',
-                                        padding: '10px 14px',
-                                        borderRadius: '2px',
-                                        background: '#FAFAF8',
-                                    }}
-                                    required
-                                />
-                            </div>
-                        ))}
-
-                        <div>
-                            <label
-                                className="block text-stone-500 uppercase mb-2"
-                                style={{ fontSize: '10px', letterSpacing: '0.15em' }}
-                            >
-                                Voyageurs
-                            </label>
-                            <select
-                                value={bookingData.guests}
-                                onChange={(e) => setBookingData({ ...bookingData, guests: e.target.value })}
-                                className="w-full text-stone-700 text-sm outline-none"
-                                style={{
-                                    border: '1px solid #E7E3DC',
-                                    padding: '10px 14px',
-                                    borderRadius: '2px',
-                                    background: '#FAFAF8',
-                                }}
-                            >
-                                {['1', '2', '3', '4', '5', '6+'].map((n) => (
-                                    <option key={n} value={n}>
-                                        {n} {n === '1' ? 'voyageur' : 'voyageurs'}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div
-                            style={{
-                                background: '#FAFAF8',
-                                border: '1px solid #F0EDE8',
-                                padding: '16px',
-                                borderRadius: '2px',
-                            }}
-                        >
-                            <p className="text-stone-500 text-sm mb-1">
-                                {hotel.name} · {hotel.category}
-                            </p>
-                            <div style={{ borderTop: '1px solid #E7E3DC', paddingTop: '12px', marginTop: '8px' }}>
-                                <p className="text-stone-500 uppercase mb-1" style={{ fontSize: '9px' }}>
-                                    Prix par nuit
-                                </p>
-                                <p
-                                    className="text-stone-900 font-semibold"
-                                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '22px' }}
-                                >
-                                    {hotel.price.toLocaleString('fr-FR')}{' '}
-                                    <span className="text-sm font-normal text-stone-400">FCFA</span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <Button type="submit" variant="primary" fullWidth>
-                            Confirmer la réservation
-                        </Button>
+                    <form onSubmit={handleBooking} className="space-y-4">
+                        <input
+                            type="date"
+                            required
+                            className="w-full border p-2"
+                            onChange={(e) => setBookingData({ ...bookingData, checkin: e.target.value })}
+                        />
+                        <input
+                            type="date"
+                            required
+                            className="w-full border p-2"
+                            onChange={(e) => setBookingData({ ...bookingData, checkout: e.target.value })}
+                        />
+                        <Button type="submit" fullWidth variant="secondary">Confirmer</Button>
                     </form>
                 )}
             </Modal>
@@ -418,22 +265,25 @@ export default function LandingPage() {
     const [email, setEmail] = useState('');
     const [emailSent, setEmailSent] = useState(false);
     const [showAllHotels, setShowAllHotels] = useState(false);
-    const [userBookings, setUserBookings] = useState<
-        Array<{ hotelName: string; checkin: string; checkout: string; guests: string; date: string }>
-    >([]);
     const [showBookingsModal, setShowBookingsModal] = useState(false);
+
+    // ✅ CORRECTION 4 : Initialisation depuis localStorage dès le premier rendu
+    const [userBookings, setUserBookings] = useState<Booking[]>(() => {
+        const saved = localStorage.getItem('userBookings');
+        return saved ? JSON.parse(saved) : [];
+    });
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 40);
         window.addEventListener('scroll', onScroll);
-
-        const savedBookings = localStorage.getItem('userBookings');
-        if (savedBookings) {
-            setUserBookings(JSON.parse(savedBookings));
-        }
-
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
+
+    // ✅ CORRECTION 5 : Callback passé à HotelCard pour resynchroniser le state
+    const refreshBookings = () => {
+        const saved = localStorage.getItem('userBookings');
+        setUserBookings(saved ? JSON.parse(saved) : []);
+    };
 
     const handleNewsletter = () => {
         if (!email || !email.includes('@')) return;
@@ -487,8 +337,8 @@ export default function LandingPage() {
                                 transition: 'color 0.3s',
                             }}
                         >
-              {LOGO_FALLBACK}
-            </span>
+                            {LOGO_FALLBACK}
+                        </span>
                     </a>
 
                     <ul className="hidden md:flex items-center gap-10">
@@ -655,8 +505,8 @@ export default function LandingPage() {
                     <div className="inline-flex items-center gap-3 mb-10 fade-up" style={{ animationDelay: '0.1s' }}>
                         <div style={{ width: '32px', height: '1px', background: '#D4A853' }} />
                         <span className="text-white/60 uppercase" style={{ fontSize: '10px', letterSpacing: '0.3em' }}>
-              Collection Prestige 2025
-            </span>
+                            Collection Prestige 2025
+                        </span>
                         <div style={{ width: '32px', height: '1px', background: '#D4A853' }} />
                     </div>
 
@@ -715,9 +565,9 @@ export default function LandingPage() {
                 </div>
 
                 <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-          <span className="text-white/30 uppercase" style={{ fontSize: '9px', letterSpacing: '0.3em' }}>
-            Défiler
-          </span>
+                    <span className="text-white/30 uppercase" style={{ fontSize: '9px', letterSpacing: '0.3em' }}>
+                        Défiler
+                    </span>
                     <div
                         className="animate-pulse"
                         style={{
@@ -737,8 +587,8 @@ export default function LandingPage() {
                             <div key={item} className="flex items-center gap-2.5">
                                 {i > 0 && <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.1)' }} />}
                                 <span className="text-white/50 uppercase" style={{ fontSize: '10px', letterSpacing: '0.18em' }}>
-                  {item}
-                </span>
+                                    {item}
+                                </span>
                             </div>
                         )
                     )}
@@ -753,8 +603,8 @@ export default function LandingPage() {
                             <div className="flex items-center gap-3 mb-3">
                                 <div style={{ width: '24px', height: '1px', background: '#D4A853' }} />
                                 <span className="text-amber-600 uppercase" style={{ fontSize: '10px', letterSpacing: '0.22em' }}>
-                  Notre sélection
-                </span>
+                                    Notre sélection
+                                </span>
                             </div>
                             <h2
                                 style={{
@@ -792,8 +642,9 @@ export default function LandingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {/* ✅ CORRECTION 6 : onBookingAdded passé à chaque HotelCard */}
                         {displayedHotels.map((hotel) => (
-                            <HotelCard key={hotel.id} hotel={hotel} />
+                            <HotelCard key={hotel.id} hotel={hotel} onBookingAdded={refreshBookings} />
                         ))}
                     </div>
                 </div>
@@ -806,8 +657,8 @@ export default function LandingPage() {
                         <div className="flex items-center justify-center gap-3 mb-3">
                             <div style={{ width: '24px', height: '1px', background: '#D4A853' }} />
                             <span className="text-amber-600 uppercase" style={{ fontSize: '10px', letterSpacing: '0.22em' }}>
-                Promotions exclusives
-              </span>
+                                Promotions exclusives
+                            </span>
                             <div style={{ width: '24px', height: '1px', background: '#D4A853' }} />
                         </div>
                         <h2
@@ -901,8 +752,8 @@ export default function LandingPage() {
                         <div className="flex items-center justify-center gap-3 mb-3">
                             <div style={{ width: '24px', height: '1px', background: '#D4A853' }} />
                             <span className="text-amber-600 uppercase" style={{ fontSize: '10px', letterSpacing: '0.22em' }}>
-                Témoignages
-              </span>
+                                Témoignages
+                            </span>
                             <div style={{ width: '24px', height: '1px', background: '#D4A853' }} />
                         </div>
                         <h2
@@ -987,17 +838,17 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-8">
                     <div className="flex flex-col md:flex-row justify-between gap-10 mb-12">
                         <div>
-              <span
-                  style={{
-                      fontFamily: "'Cormorant Garamond', Georgia, serif",
-                      fontSize: '24px',
-                      fontWeight: '400',
-                      letterSpacing: '0.2em',
-                      color: 'white',
-                  }}
-              >
-                {LOGO_FALLBACK}
-              </span>
+                            <span
+                                style={{
+                                    fontFamily: "'Cormorant Garamond', Georgia, serif",
+                                    fontSize: '24px',
+                                    fontWeight: '400',
+                                    letterSpacing: '0.2em',
+                                    color: 'white',
+                                }}
+                            >
+                                {LOGO_FALLBACK}
+                            </span>
                             <p className="text-white/30 mt-3 max-w-xs" style={{ fontSize: '13px', lineHeight: '1.7' }}>
                                 Des expériences hôtelières d'exception, soigneusement sélectionnées pour les voyageurs exigeants.
                             </p>
@@ -1042,7 +893,7 @@ export default function LandingPage() {
                 </div>
             </footer>
 
-            {/* MODAL DES RESERVATIONS */}
+            {/* ====== MODAL RÉSERVATIONS ====== */}
             <Modal isOpen={showBookingsModal} onClose={() => setShowBookingsModal(false)}>
                 <div>
                     <div className="flex justify-between items-center mb-4">
@@ -1091,27 +942,19 @@ export default function LandingPage() {
                                     </h4>
                                     <div className="grid grid-cols-2 gap-3 text-sm">
                                         <div>
-                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>
-                                                Arrivée
-                                            </p>
+                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>Arrivée</p>
                                             <p className="text-stone-700">{new Date(booking.checkin).toLocaleDateString('fr-FR')}</p>
                                         </div>
                                         <div>
-                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>
-                                                Départ
-                                            </p>
+                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>Départ</p>
                                             <p className="text-stone-700">{new Date(booking.checkout).toLocaleDateString('fr-FR')}</p>
                                         </div>
                                         <div>
-                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>
-                                                Voyageurs
-                                            </p>
+                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>Voyageurs</p>
                                             <p className="text-stone-700">{booking.guests}</p>
                                         </div>
                                         <div>
-                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>
-                                                Réservé le
-                                            </p>
+                                            <p className="text-stone-400" style={{ fontSize: '11px' }}>Réservé le</p>
                                             <p className="text-stone-700">{booking.date}</p>
                                         </div>
                                     </div>
