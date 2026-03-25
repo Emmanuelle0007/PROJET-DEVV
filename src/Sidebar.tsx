@@ -9,9 +9,6 @@ export default function Sidebar({ activePage = 'reservations', onPageChange }: S
   return (
     <div className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0">
       <div className="p-6 flex items-center gap-3 border-b border-gray-100">
-        <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-lg">H</span>
-        </div>
         <span className="text-xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">
           IRMA
         </span>

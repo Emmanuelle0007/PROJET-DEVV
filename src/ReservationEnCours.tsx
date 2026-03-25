@@ -41,14 +41,14 @@ const avatarColors = [
 ];
 
 const rooms = [
-  { name: "Suite Royale 401", type: "Suite", capacity: 4, price: 875000 },
-  { name: "Chambre Deluxe 210", type: "Deluxe", capacity: 2, price: 180000 },
-  { name: "Junior Suite 305", type: "Suite", capacity: 3, price: 315000 },
-  { name: "Chambre Standard 108", type: "Standard", capacity: 2, price: 135000 },
-  { name: "Suite Présidentielle 501", type: "Suite", capacity: 6, price: 1250000 },
-  { name: "Chambre Standard 102", type: "Standard", capacity: 2, price: 125000 },
-  { name: "Chambre Deluxe 220", type: "Deluxe", capacity: 2, price: 190000 },
-  { name: "Junior Suite 310", type: "Suite", capacity: 3, price: 320000 }
+  { name: "Suite Royale 401", type: "Suite", capacity: 4, price:1000 },
+  { name: "Chambre Deluxe 210", type: "Deluxe", capacity: 2, price: 650 },
+  { name: "Junior Suite 305", type: "Suite", capacity: 3, price: 950 },
+  { name: "Chambre Standard 108", type: "Standard", capacity: 2, price: 300 },
+  { name: "Suite Présidentielle 501", type: "Suite", capacity: 6, price: 1500 },
+  { name: "Chambre Standard 102", type: "Standard", capacity: 2, price: 350 },
+  { name: "Chambre Deluxe 220", type: "Deluxe", capacity: 2, price: 700 },
+  { name: "Junior Suite 310", type: "Suite", capacity: 3, price: 1100 }
 ];
 
 export default function ReservationEnCours({ 
@@ -221,7 +221,7 @@ export default function ReservationEnCours({
     }
   };
 
-  const formatPrice = (price: number) => price.toLocaleString() + ' FCFA';
+  const formatPrice = (price: number) => price.toLocaleString() + '€';
 
   const totalReservations = reservations.length;
   const totalRevenue = reservations.reduce((sum, r) => sum + r.amount, 0);
@@ -249,18 +249,18 @@ export default function ReservationEnCours({
       {/* Cartes statistiques */}
       {totalReservations > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+          <div className="bg-gradient-to-r from-gray-900 to-yellow-500  rounded-xl p-4 text-white">
             <p className="text-sm opacity-90">Total réservations</p>
             <p className="text-2xl font-bold">{totalReservations}</p>
           </div>
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-4 text-white">
+          <div className="bg-gradient-to-r from-gray-900 to-yellow-500 rounded-xl p-4 text-white">
             <p className="text-sm opacity-90">Revenu total</p>
             <p className="text-2xl font-bold">{formatPrice(totalRevenue)}</p>
           </div>
-          <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl p-4 text-white">
-            <p className="text-sm opacity-90">Nuits totales</p>
-            <p className="text-2xl font-bold">{totalNights} nuits</p>
-          </div>
+          <div className="bg-gradient-to-r from-gray-900 to-yellow-500 rounded-xl p-4 text-white">
+  <p className="text-sm opacity-90">Nuits totales</p>
+  <p className="text-2xl font-bold">{totalNights} nuits</p>
+        </div>
         </div>
       )}
 
@@ -421,7 +421,7 @@ export default function ReservationEnCours({
                       <option value="">Sélectionner une chambre</option>
                       {rooms.map(room => (
                         <option key={room.name} value={room.name}>
-                          {room.name} - {room.type} ({room.capacity} pers) - {room.price.toLocaleString()} FCFA/nuit
+                          {room.name} - {room.type} ({room.capacity} pers) - {room.price.toLocaleString()} €/nuit
                         </option>
                       ))}
                     </select>
