@@ -236,25 +236,22 @@ function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: ()
                 title={hotel.name}
             >
                 {bookingSuccess ? (
-                    <p className="text-green-600 text-center py-4">Réservation confirmée !</p>
+                    <p className="text-green-600 text-center py-4 font-semibold">
+                        Réservation confirmée !
+                    </p>
                 ) : (
-                    <form onSubmit={handleBooking} className="space-y-4">
-                        <input
-                            type="date"
-                            required
-                            className="w-full border p-2"
-                            onChange={(e) => setBookingData({ ...bookingData, checkin: e.target.value })}
-                        />
-                        <input
-                            type="date"
-                            required
-                            className="w-full border p-2"
-                            onChange={(e) => setBookingData({ ...bookingData, checkout: e.target.value })}
-                        />
-                        <Button type="submit" fullWidth variant="secondary">Confirmer</Button>
+                    <form onSubmit={handleBooking} className="flex flex-col items-center">
+                        {/* Les inputs de date ont été supprimés ici */}
+
+                        <div className="w-full pt-4">
+                            <Button type="submit" className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase">
+                                CONFIRMER LA RÉSERVATION
+                            </Button>
+                        </div>
                     </form>
                 )}
             </Modal>
+
         </>
     );
 }
@@ -337,7 +334,6 @@ export default function LandingPage() {
                                 transition: 'color 0.3s',
                             }}
                         >
-                            {LOGO_FALLBACK}
                         </span>
                     </a>
 
