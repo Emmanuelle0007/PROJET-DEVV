@@ -27,10 +27,11 @@ interface ReservationsEnCoursProps {
   onCancelReservation: (id: string) => void;
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
   "En cours": { bg: "bg-blue-100", text: "text-blue-800", dot: "bg-blue-500" },
   "Confirmée": { bg: "bg-emerald-100", text: "text-emerald-800", dot: "bg-emerald-500" },
 };
+
 
 const avatarColors = [
   "bg-purple-100 text-purple-700",
@@ -50,7 +51,7 @@ const rooms = [
   { name: "Junior Suite 310", type: "Suite", capacity: 3, price: 320000 }
 ];
 
-export default function ReservationsEnCours({ 
+export default function ReservationEnCours({ 
   reservations, 
   onAddReservation, 
   onUpdateReservation, 
