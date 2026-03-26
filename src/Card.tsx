@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useState, useEffect, useRef } from 'react';
 
 interface CardProps {
     children: ReactNode;
@@ -7,6 +7,7 @@ interface CardProps {
     badge?: string;
     favorite?: boolean;
     onFavoriteToggle?: () => void;
+    autoPlayInterval?: number;
 }
 
 export const Card = ({
@@ -16,22 +17,78 @@ export const Card = ({
                          badge,
                          favorite = false,
                          onFavoriteToggle,
+                         autoPlayInterval = 3000,
                      }: CardProps) => {
     const [currentImgIndex, setCurrentImgIndex] = useState(0);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const allImages: string[] = images.length > 0
         ? images
         : (initialImage ? [initialImage] : []);
 
+    const nextImage = () => {
+        setCurrentImgIndex((prev) => (prev + 1) % allImages.length);
+    };
+
+    const prevImage = () => {
+        setCurrentImgIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    };
+
+    useEffect(() => {
+        if (allImages.length > 1) {
+            intervalRef.current = setInterval(nextImage, autoPlayInterval);
+        }
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [allImages.length, autoPlayInterval]);
+
+    const handleMouseEnter = () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+
+    const handleMouseLeave = () => {
+        if (allImages.length > 1) {
+            intervalRef.current = setInterval(nextImage, autoPlayInterval);
+        }
+    };
+
+    if (allImages.length === 0) return null;
+
     return (
-        <div className="group relative bg-white overflow-hidden cursor-pointer rounded-sm shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
+        <div
+            className="group relative bg-white overflow-hidden cursor-pointer rounded-sm shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
             <div className="relative overflow-hidden" style={{ height: '320px' }}>
-                {allImages.length > 0 && (
-                    <img
-                        src={allImages[currentImgIndex]}
-                        alt=""
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
+                <img
+                    src={allImages[currentImgIndex]}
+                    alt=""
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+
+                {allImages.length > 1 && (
+                    <>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                prevImage();
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50"
+                        >
+                            ◀
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                nextImage();
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50"
+                        >
+                            ▶
+                        </button>
+                    </>
                 )}
 
                 {allImages.length > 1 && (
