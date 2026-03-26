@@ -224,7 +224,7 @@ function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: ()
                 </h3>
                 <p className="text-stone-400 text-sm mb-4">{hotel.location}</p>
                 <div className="flex items-center justify-between pt-4 border-t border-stone-100">
-                    <span className="font-bold">{hotel.price.toLocaleString()} FCFA</span>
+                    <span className="font-bold">{hotel.price.toLocaleString()} €</span>
                     <Button onClick={() => setShowModal(true)}>Réserver</Button>
                 </div>
             </Card>
