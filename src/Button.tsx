@@ -6,6 +6,7 @@ interface ButtonProps {
     variant?: 'primary' | 'secondary' | 'outline';
     fullWidth?: boolean;
     type?: 'button' | 'submit';
+      className?: string;
 }
 
 export const Button = ({

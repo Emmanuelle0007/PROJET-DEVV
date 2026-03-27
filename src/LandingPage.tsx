@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './useAuth';
 import { Card } from './Card';
 import { Modal } from './Modal';
 import { Button } from './Button';
@@ -13,7 +15,7 @@ const hotels = [
         id: 1,
         name: 'Le Grand Palais',
         location: 'Paris, France',
-        price: 99990,
+        price: 9999,
         rating: 6.9,
         reviews: 1284,
         category: 'Suite Royale',
@@ -25,7 +27,7 @@ const hotels = [
         id: 2,
         name: 'Radisson Blu Dakar',
         location: 'Dakar, Sénégal',
-        price: 11200,
+        price: 1120,
         rating: 4.3,
         reviews: 842,
         category: 'Chambre Prestige',
@@ -37,7 +39,7 @@ const hotels = [
         id: 3,
         name: 'Burj Al Arab',
         location: 'Dubai, EAU',
-        price: 750000,
+        price: 7590,
         rating: 5.0,
         reviews: 3021,
         category: 'Chambre Royale',
@@ -49,7 +51,7 @@ const hotels = [
         id: 4,
         name: 'Les Tours Jumelles',
         location: 'Brazzaville, Congo',
-        price: 145000,
+        price: 4590,
         rating: 4.2,
         reviews: 567,
         category: 'Villa Exclusive',
@@ -61,7 +63,7 @@ const hotels = [
         id: 5,
         name: 'Park Hyatt',
         location: 'Tokyo, Japon',
-        price: 945000,
+        price: 9459,
         rating: 5.8,
         reviews: 967,
         category: 'Hotel Luxueux',
@@ -73,7 +75,7 @@ const hotels = [
         id: 6,
         name: 'The Savoy',
         location: 'Londres, Angleterre',
-        price: 425000,
+        price: 4259,
         rating: 4.9,
         reviews: 2156,
         category: 'Suite Royale',
@@ -85,7 +87,7 @@ const hotels = [
         id: 7,
         name: 'Four Seasons',
         location: 'Marrakech, Maroc',
-        price: 185000,
+        price: 1859,
         rating: 4.8,
         reviews: 1432,
         category: 'Jardin Suite',
@@ -97,7 +99,7 @@ const hotels = [
         id: 8,
         name: 'Mandarin Oriental',
         location: 'Bangkok, Thaïlande',
-        price: 295000,
+        price: 2950,
         rating: 4.9,
         reviews: 1876,
         category: 'River View Suite',
@@ -109,7 +111,7 @@ const hotels = [
         id: 9,
         name: 'Belmond Copacabana',
         location: 'Rio, Brésil',
-        price: 265000,
+        price: 2659,
         rating: 4.7,
         reviews: 1123,
         category: 'Ocean Front',
@@ -173,12 +175,14 @@ type Booking = {
     checkout: string;
     guests: string;
     date: string;
+    userId: string;
 };
 
 type Hotel = typeof hotels[0];
 
-// ✅ CORRECTION 1 : HotelCard reçoit onBookingAdded pour notifier LandingPage
 function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: () => void }) {
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [isFav, setIsFav] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [bookingData, setBookingData] = useState({ checkin: '', checkout: '', guests: '2' });
@@ -188,25 +192,32 @@ function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: ()
         e.preventDefault();
         if (!bookingData.checkin || !bookingData.checkout) return;
 
+        if (!user) {
+            alert('Veuillez vous connecter pour réserver');
+            navigate('/register');
+            return;
+        }
+
         const newBooking: Booking = {
             hotelName: hotel.name,
             checkin: bookingData.checkin,
             checkout: bookingData.checkout,
             guests: bookingData.guests,
-            date: new Date().toLocaleDateString('€'),
+            date: new Date().toLocaleDateString('fr-FR'),
+            userId: user.id,
         };
 
         const saved = localStorage.getItem('userBookings');
         const current: Booking[] = saved ? JSON.parse(saved) : [];
         localStorage.setItem('userBookings', JSON.stringify([...current, newBooking]));
 
-        // ✅ CORRECTION 2 : On notifie LandingPage pour qu'il recharge depuis localStorage
         onBookingAdded();
 
         setBookingSuccess(true);
         setTimeout(() => {
             setBookingSuccess(false);
             setShowModal(false);
+            navigate('/dashboards');
         }, 2000);
     };
 
@@ -229,7 +240,6 @@ function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: ()
                 </div>
             </Card>
 
-            {/* ✅ CORRECTION 3 : onSuccess supprimé, n'existe plus dans Modal */}
             <Modal
                 isOpen={showModal}
                 onClose={() => { if (!bookingSuccess) setShowModal(false); }}
@@ -240,9 +250,39 @@ function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: ()
                         Réservation confirmée !
                     </p>
                 ) : (
-                    <form onSubmit={handleBooking} className="flex flex-col items-center">
-                        {/* Les inputs de date ont été supprimés ici */}
-
+                    <form onSubmit={handleBooking} className="flex flex-col gap-4">
+                        <div>
+                            <label className="block text-sm text-stone-600 mb-1">Arrivée</label>
+                            <input
+                                type="date"
+                                value={bookingData.checkin}
+                                onChange={(e) => setBookingData({ ...bookingData, checkin: e.target.value })}
+                                required
+                                className="w-full border border-stone-200 rounded px-4 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-stone-600 mb-1">Départ</label>
+                            <input
+                                type="date"
+                                value={bookingData.checkout}
+                                onChange={(e) => setBookingData({ ...bookingData, checkout: e.target.value })}
+                                required
+                                className="w-full border border-stone-200 rounded px-4 py-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-stone-600 mb-1">Voyageurs</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="10"
+                                value={bookingData.guests}
+                                onChange={(e) => setBookingData({ ...bookingData, guests: e.target.value })}
+                                required
+                                className="w-full border border-stone-200 rounded px-4 py-2"
+                            />
+                        </div>
                         <div className="w-full pt-4">
                             <Button type="submit" className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase">
                                 CONFIRMER LA RÉSERVATION
@@ -251,24 +291,26 @@ function HotelCard({ hotel, onBookingAdded }: { hotel: Hotel; onBookingAdded: ()
                     </form>
                 )}
             </Modal>
-
         </>
     );
 }
 
 export default function LandingPage() {
+    const { user } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [email, setEmail] = useState('');
     const [emailSent, setEmailSent] = useState(false);
     const [showAllHotels, setShowAllHotels] = useState(false);
     const [showBookingsModal, setShowBookingsModal] = useState(false);
+    const [bookingsVersion, setBookingsVersion] = useState(0);
 
-    // ✅ CORRECTION 4 : Initialisation depuis localStorage dès le premier rendu
-    const [userBookings, setUserBookings] = useState<Booking[]>(() => {
+    const userBookings = useMemo<Booking[]>(() => {
+        void bookingsVersion;
         const saved = localStorage.getItem('userBookings');
-        return saved ? JSON.parse(saved) : [];
-    });
+        const allBookings: Booking[] = saved ? JSON.parse(saved) : [];
+        return user ? allBookings.filter(b => b.userId === user.id) : [];
+    }, [user, bookingsVersion]);
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 40);
@@ -276,10 +318,8 @@ export default function LandingPage() {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    // ✅ CORRECTION 5 : Callback passé à HotelCard pour resynchroniser le state
     const refreshBookings = () => {
-        const saved = localStorage.getItem('userBookings');
-        setUserBookings(saved ? JSON.parse(saved) : []);
+        setBookingsVersion(version => version + 1);
     };
 
     const handleNewsletter = () => {
@@ -638,7 +678,6 @@ export default function LandingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {/* ✅ CORRECTION 6 : onBookingAdded passé à chaque HotelCard */}
                         {displayedHotels.map((hotel) => (
                             <HotelCard key={hotel.id} hotel={hotel} onBookingAdded={refreshBookings} />
                         ))}

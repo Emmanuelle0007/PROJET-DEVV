@@ -36,7 +36,9 @@ export const Card = ({
 
     useEffect(() => {
         if (allImages.length > 1) {
-            intervalRef.current = setInterval(nextImage, autoPlayInterval);
+            intervalRef.current = setInterval(() => {
+                setCurrentImgIndex((prev) => (prev + 1) % allImages.length);
+            }, autoPlayInterval);
         }
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -49,7 +51,9 @@ export const Card = ({
 
     const handleMouseLeave = () => {
         if (allImages.length > 1) {
-            intervalRef.current = setInterval(nextImage, autoPlayInterval);
+            intervalRef.current = setInterval(() => {
+                setCurrentImgIndex((prev) => (prev + 1) % allImages.length);
+            }, autoPlayInterval);
         }
     };
 
